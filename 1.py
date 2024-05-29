@@ -1,67 +1,74 @@
-# Не ориентированный граф - Обход в глубину и в ширину
-
-class Graph:
+class HashTable:
     def __init__(self):
-        self.graph = {}
+        # Константы для хэш-функции и размера таблицы
+        self.A = 31
+        self.P = 300007
+        # Создание таблицы с пустыми списками
+        self.table = [[] for _ in range(self.P)]
 
-    # Функция для добавления ребра в граф
-    def add_edge(self, u, v):
-        if u not in self.graph:
-            self.graph[u] = []
-        self.graph[u].append(v)
+    def hash_function(self, s):
+        # Хэш-функция для вычисления индекса по ключу
+        h = 0
+        for ch in s:
+            h = (h * self.A + ord(ch)) % self.P
+        return h
 
-        # Добавляем обратное ребро для не ориентированного графа
-        if v not in self.graph:
-            self.graph[v] = []
-        self.graph[v].append(u)
+    def put(self, key, value):
+        # Добавление элемента в таблицу или обновление значения, если ключ уже существует
+        index = self.hash_function(key)
+        for pair in self.table[index]:
+            if pair[0] == key:
+                pair[1] = value
+                return
+        self.table[index].append([key, value])
 
-    # Обход в глубину
-    def dfs(self, current, target, visited, path):
-        visited.add(current)
-        path.append(current)
+    def get(self, key):
+        # Получение значения по ключу
+        index = self.hash_function(key)
+        for k, v in self.table[index]:
+            if k == key:
+                print(v)
+                return
+        # если ключ отсутствует вывод 'null'
+        print('null')
 
-        if current == target:
-            print(' '.join(map(str, path)) + "!")
-        else:
-            if current in self.graph:  # Проверяем наличие вершины в графе
-                for neighbor in self.graph[current]:
-                    if neighbor not in visited:
-                        self.dfs(neighbor, target, visited, path)
-        path.pop()
-        visited.remove(current)
+    def delete(self, key):
+        # Удаление элемента по ключу
+        index = self.hash_function(key)
+        for i, (k, v) in enumerate(self.table[index]):
+            if k == key:
+                del self.table[index][i]
+                return
+        print('null')
 
-    # Обход в ширину
-    def bfs(self, start):
-        visited = set()
-        queue = [start]
-        visited.add(start)
-
-        while queue:
-            print(queue, end=' ')
-            v = queue.pop(0)
-            print(v, end=' ')
-
-            if v in self.graph:  # Проверяем наличие вершины в графе
-                for neighbor in self.graph[v]:
-                    if neighbor not in visited:
-                        queue.append(neighbor)
-                        visited.add(neighbor)
+    def cycle_request(self):
+        # Цикл для обработки команд до получения команды выхода
+        f = True
+        while (f):
+            r = input().split()  # Получение команды и аргументов
+            if r[0] == 'put':
+                self.put(r[1], r[2])
+            elif r[0] == 'get':
+                self.get(r[1])
+            elif r[0] == 'delete':
+                self.delete(r[1])
+            else:
+                print('not understand!')
+                f = False
 
 
-# Создаем граф
-graph = Graph()
-graph.add_edge(0, 1)
-graph.add_edge(0, 2)
-graph.add_edge(1, 3)
-graph.add_edge(2, 3)
-graph.add_edge(2, 4)
-graph.add_edge(2, 5)
-# graph.add_edge(3, 6)
-graph.add_edge(5, 4)
-graph.add_edge(5, 6)
+hashtable = HashTable()
+hashtable.cycle_request()
 
-print("Обход в глубину:")
-graph.dfs(0, 6, set(), [])
-
-print("\nОбход в ширину:")
-graph.bfs(0)
+'''
+Пример входных данных:
+put hello world
+put name ilya
+get hello
+get ilya
+delete hello
+get hello
+get name
+put name vasya
+get name
+'''
